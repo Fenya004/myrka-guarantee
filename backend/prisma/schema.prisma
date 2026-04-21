@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Deal {
+  id                   String   @id @default(cuid())
+  amount               Int
+  commission           Int
+  status               String   @default("CREATED")
+  couponCodeEncrypted  String
+  paymentDetails       String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  buyerTelegramId      String
+  sellerTelegramId     String?
+  disputeReason        String?
+  disputeCreatedAt     DateTime?
+  buyerBlockedUntil    DateTime?
+  fakePayCount         Int      @default(0)
+  paymentDeadline      DateTime?
+  messages             Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  fromId    String
+  fromRole  String
+  text      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model FraudLog {
+  id               Int      @id @default(autoincrement())
+  buyerTelegramId  String
+  action           String
+  createdAt        DateTime @default(now())
+}
