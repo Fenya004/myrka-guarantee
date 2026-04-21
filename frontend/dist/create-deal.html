@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Новая сделка – Myrka_1337</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding-bottom: 90px;
+        }
+        .status-bar {
+            background: #1e293b;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .logo {
+            font-weight: 600;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #14b8a6;
+        }
+        .balance {
+            background: #0f172a;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            border: 1px solid #334155;
+        }
+        .container {
+            max-width: 680px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+        .description {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .segmented {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .segment {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            transition: 0.2s;
+        }
+        .segment.active {
+            background: #14b8a6;
+            color: white;
+            border-color: #14b8a6;
+        }
+        input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 40px;
+            padding: 14px 18px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #14b8a6;
+        }
+        .create-btn {
+            background: #14b8a6;
+            border-radius: 40px;
+            padding: 14px;
+            width: 100%;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .create-btn:active {
+            background: #0d9488;
+            transform: scale(0.98);
+        }
+        /* Стиль для скрытого поля */
+        .hidden {
+            display: none;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px 20px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .nav-item.active {
+            color: #14b8a6;
+            background: #0f172a;
+        }
+        .nav-item i {
+            font-size: 22px;
+        }
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div class="logo"><i class="fas fa-shield-alt"></i> Myrka_1337</div>
+        <div class="balance"><i class="fas fa-wallet"></i> 0 ₽</div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h2>Новая сделка</h2>
+            <div class="description">Создайте новую сделку с продавцом</div>
+            <div class="segmented" id="roleSegmented">
+                <div class="segment active" data-role="buyer">Покупатель</div>
+                <div class="segment" data-role="seller">Продавец</div>
+            </div>
+            <input type="number" id="amount" placeholder="Сумма (₽)" value="5000">
+            <!-- Поле купона: скрыто для продавца -->
+            <input type="text" id="couponCode" placeholder="Код купона (для покупателя)" class="coupon-field">
+            <button class="create-btn" onclick="createDeal()">Создать сделку</button>
+        </div>
+    </div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="location.href='create-deal.html'"><i class="fas fa-plus-circle"></i><span>Сделка</span></div>
+        <div class="nav-item" onclick="alert('Чат в разработке')"><i class="fas fa-comment-dots"></i><span>Чат</span></div>
+        <div class="nav-item" onclick="alert('Арбитраж')"><i class="fas fa-gavel"></i><span>Арбитраж</span></div>
+        <div class="nav-item" onclick="alert('Профиль')"><i class="fas fa-user"></i><span>Профиль</span></div>
+    </div>
+    <script>
+        let userRole = localStorage.getItem('userRole') || 'buyer';
+        const couponField = document.getElementById('couponCode');
+
+        // Функция обновления видимости поля купона в зависимости от роли
+        function updateCouponFieldVisibility() {
+            if (userRole === 'seller') {
+                couponField.classList.add('hidden');
+                couponField.value = ''; // Очищаем значение, если было
+            } else {
+                couponField.classList.remove('hidden');
+            }
+        }
+
+        function updateRoleUI() {
+            document.querySelectorAll('.segment').forEach(seg => {
+                if (seg.dataset.role === userRole) seg.classList.add('active');
+                else seg.classList.remove('active');
+            });
+            updateCouponFieldVisibility();
+        }
+
+        document.querySelectorAll('.segment').forEach(seg => {
+            seg.addEventListener('click', () => {
+                userRole = seg.dataset.role;
+                localStorage.setItem('userRole', userRole);
+                updateRoleUI();
+            });
+        });
+
+        updateRoleUI();
+
+        async function createDeal() {
+            const amount = parseInt(document.getElementById('amount').value);
+            if (!amount) return alert('Введите сумму');
+
+            let coupon = '';
+            if (userRole === 'buyer') {
+                coupon = document.getElementById('couponCode').value;
+                if (!coupon) return alert('Для покупателя необходимо указать код купона');
+            } else {
+                // Для продавца поле скрыто, отправляем пустую строку
+                coupon = '';
+            }
+
+            const userId = localStorage.getItem('userId') || 'demo';
+            const res = await fetch('/api/deal/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, couponCode: coupon, buyerTelegramId: userId, role: userRole })
+            });
+            const data = await res.json();
+            if (res.ok) location.href = `deal.html?id=${data.dealId}`;
+            else alert('Ошибка: ' + data.error);
+        }
+    </script>
+</body>
+</html>

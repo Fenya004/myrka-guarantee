@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Сделка – Myrka_1337</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding-bottom: 90px;
+        }
+        .status-bar {
+            background: #1e293b;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .container {
+            max-width: 680px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+        .badge {
+            background: #0f172a;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 24px 0;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .step.active {
+            color: #14b8a6;
+            font-weight: 600;
+        }
+        .step-bar {
+            height: 3px;
+            background: #334155;
+            margin-top: 8px;
+            border-radius: 3px;
+        }
+        .step.active .step-bar {
+            background: #14b8a6;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            font-size: 16px;
+        }
+        .timer {
+            font-family: monospace;
+            font-size: 44px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #14b8a6;
+        }
+        button {
+            background: #14b8a6;
+            border-radius: 40px;
+            padding: 14px;
+            width: 100%;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+            background: #0d9488;
+        }
+        button.secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px 20px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .nav-item.active {
+            color: #14b8a6;
+            background: #0f172a;
+        }
+        .nav-item i { font-size: 22px; }
+        .nav-item span { font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div><i class="fas fa-shield-alt"></i> Myrka_1337</div>
+        <div><i class="fas fa-wallet"></i> 0 ₽</div>
+    </div>
+    <div class="container" id="dealContainer"></div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="location.reload()"><i class="fas fa-exchange-alt"></i><span>Сделка</span></div>
+        <div class="nav-item" onclick="alert('Чат в разработке')"><i class="fas fa-comment-dots"></i><span>Чат</span></div>
+        <div class="nav-item" onclick="alert('Арбитраж')"><i class="fas fa-gavel"></i><span>Арбитраж</span></div>
+        <div class="nav-item" onclick="alert('Профиль')"><i class="fas fa-user"></i><span>Профиль</span></div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const dealId = urlParams.get('id');
+        if (!dealId) { alert('ID сделки не указан'); window.location.href = 'create-deal.html'; }
+        let timerInterval = null;
+
+        async function loadDeal() {
+            const res = await fetch(`/api/deal/${dealId}`);
+            if (!res.ok) { alert('Сделка не найдена'); window.location.href = 'create-deal.html'; return; }
+            const deal = await res.json();
+            renderDeal(deal);
+        }
+
+        function renderDeal(deal) {
+            const steps = ['CREATED','PENDING_PAYMENT','WAITING_CONFIRMATION','PAID','COMPLETED'];
+            const stepNames = ['Создана','Оплата','Подтверждение','Завершена'];
+            let activeIdx = steps.indexOf(deal.status);
+            if (activeIdx > 3) activeIdx = 3;
+            if (activeIdx < 0) activeIdx = 0;
+
+            let html = `
+                <div class="card">
+                    <div class="badge">${deal.status}</div>
+                    <h2 style="font-size: 24px; margin-bottom: 8px;">Сделка #${deal.id.slice(-5)}</h2>
+                    <div class="steps">
+                        ${stepNames.map((n,i)=>`<div class="step ${i<=activeIdx?'active':''}">${n}<div class="step-bar"></div></div>`).join('')}
+                    </div>
+                    <div class="row"><span>Сумма сделки</span><strong>${deal.amount} ₽</strong></div>
+                    <div class="row"><span>Комиссия сервиса</span><strong>${deal.commission} ₽</strong></div>
+                </div>
+            `;
+
+            if (deal.status === 'PENDING_PAYMENT') {
+                html += `
+                    <div class="card">
+                        <h3 style="margin-bottom: 12px;">Реквизиты для оплаты</h3>
+                        <p style="color:#94a3b8; margin-bottom: 16px;">Оплатите по указанным реквизитам в течение 10 минут</p>
+                        <div style="background:#0f172a; border-radius: 16px; padding: 16px; margin-bottom: 16px; border:1px solid #334155;">${deal.paymentDetails || 'Тинькофф карта 5536 9138 2574 1234'}</div>
+                        <button class="secondary" onclick="copyText('${(deal.paymentDetails || 'Тинькофф карта 5536 9138 2574 1234').replace(/'/g,"\\'")}')">Скопировать</button>
+                        <div class="timer" id="timer"></div>
+                        <div style="font-size: 13px; text-align: center;">⚠️ После истечения времени реквизиты станут недействительными</div>
+                    </div>
+                    <button onclick="markPaid()">Я оплатил</button>
+                    <p style="font-size: 12px; text-align: center; margin-top: 12px;">После нажатия ожидайте подтверждения администратора</p>
+                `;
+                if (deal.paymentDeadline) startTimer(new Date(deal.paymentDeadline));
+            } else if (deal.status === 'WAITING_CONFIRMATION') {
+                html += `<div class="card"><div style="text-align:center;">⏳ Ожидаем подтверждения администратора...</div></div>`;
+            } else if (deal.status === 'PAID' || deal.status === 'COMPLETED') {
+                window.location.href = `completed.html?id=${deal.id}`;
+                return;
+            } else if (deal.status === 'CREATED') {
+                html += `<button onclick="initiatePayment()">Оплатить</button>`;
+            } else if (deal.status === 'DISPUTE') {
+                html += `<div class="card"><div style="color:#f87171;">⚠️ Спор открыт. Администратор свяжется с вами.</div></div>`;
+            }
+            document.getElementById('dealContainer').innerHTML = html;
+        }
+
+        function startTimer(deadline) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const diff = deadline - new Date();
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    if (document.getElementById('timer')) document.getElementById('timer').innerText = '00:00';
+                    loadDeal();
+                } else {
+                    const m = Math.floor(diff / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    if (document.getElementById('timer')) document.getElementById('timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+        async function initiatePayment() {
+            const res = await fetch(`/api/deal/${dealId}/initiate-payment`, { method: 'POST' });
+            if (res.ok) loadDeal();
+            else { const err = await res.json(); alert(err.error); }
+        }
+        async function markPaid() {
+            const res = await fetch(`/api/deal/${dealId}/mark-paid`, { method: 'POST' });
+            if (res.ok) { alert('Заявка отправлена'); loadDeal(); }
+            else { const err = await res.json(); alert(err.error); }
+        }
+        function copyText(text) { navigator.clipboard.writeText(text); alert('Скопировано'); }
+        loadDeal();
+    </script>
+</body>
+</html>

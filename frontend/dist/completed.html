@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Сделка завершена – Myrka_1337</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding-bottom: 90px;
+        }
+        .status-bar {
+            background: #1e293b;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+        .container {
+            max-width: 680px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .coupon {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 22px;
+            letter-spacing: 2px;
+            margin: 24px 0;
+            border: 1px solid #334155;
+            color: #14b8a6;
+        }
+        button {
+            background: #14b8a6;
+            border-radius: 40px;
+            padding: 14px;
+            width: 100%;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+            background: #0d9488;
+        }
+        button.secondary {
+            background: #334155;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px 20px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .nav-item i { font-size: 22px; }
+        .nav-item span { font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <div><i class="fas fa-shield-alt"></i> Myrka_1337</div>
+        <div><i class="fas fa-wallet"></i> 0 ₽</div>
+    </div>
+    <div class="container" id="completedContainer"></div>
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="location.href='create-deal.html'"><i class="fas fa-plus-circle"></i><span>Сделка</span></div>
+        <div class="nav-item" onclick="alert('Чат')"><i class="fas fa-comment-dots"></i><span>Чат</span></div>
+        <div class="nav-item" onclick="alert('Арбитраж')"><i class="fas fa-gavel"></i><span>Арбитраж</span></div>
+        <div class="nav-item" onclick="alert('Профиль')"><i class="fas fa-user"></i><span>Профиль</span></div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const dealId = urlParams.get('id');
+        if (!dealId) window.location.href = 'create-deal.html';
+
+        async function loadCompleted() {
+            const res = await fetch(`/api/deal/${dealId}`);
+            if (!res.ok) { window.location.href = 'create-deal.html'; return; }
+            const deal = await res.json();
+            document.getElementById('completedContainer').innerHTML = `
+                <div class="card">
+                    <div class="badge" style="background:#0f172a; display:inline-block; padding:4px 12px; border-radius:30px; margin-bottom:16px; border:1px solid #334155;">COMPLETED</div>
+                    <h2 style="font-size: 24px;">Сделка #${deal.id.slice(-5)}</h2>
+                    <div style="margin: 20px 0;"><strong>Сделка завершена!</strong></div>
+                    <p>Код купона передан покупателю.<br>Спасибо за использование нашего гарант сервиса!</p>
+                    <div class="coupon">${deal.couponCode || 'ABCD-EFGH-IJKL-1234'}</div>
+                    <button class="secondary" onclick="copyText('${deal.couponCode || 'ABCD-EFGH-IJKL-1234'}')">Скопировать</button>
+                    <button class="secondary" onclick="alert('Открыть спор')">Открыть спор</button>
+                    <button onclick="location.href='create-deal.html'">На главную</button>
+                </div>
+            `;
+        }
+        function copyText(t) { navigator.clipboard.writeText(t); alert('Скопировано'); }
+        loadCompleted();
+    </script>
+</body>
+</html>
